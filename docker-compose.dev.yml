@@ -16,6 +16,9 @@ services:
       - ./app:/app
     expose:
       - 5000
+    ports:
+      - "8003:8003"
+      - "4431:443"
     depends_on:
       - db
 
@@ -46,7 +49,8 @@ services:
   nginx:
     build: ./nginx
     ports:
-      - 80:80
+      - "80:80"
+      - "443:443"
     volumes:
       - static:/home/web/default/static
     depends_on:
