@@ -14,6 +14,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
     volumes:
       - ./app:/app
+      - ./certs:/certs
     expose:
       - 5000
     ports:
@@ -53,9 +54,12 @@ services:
       - "443:443"
     volumes:
       - static:/home/web/default/static
+      - ./certs:/certs
+      - ./nginx:/etc/nginx/nginx:ro
     depends_on:
       - db
-      # - pgadmin
+      - pgadmin
+      - app
 
 volumes:
   pg_db:
