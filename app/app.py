@@ -17,6 +17,11 @@ with app.app_context():
 
     conn.create_all()
 
+# cert_pem = ""
+
+import ssl
+ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+ctx.load_cert_chain('/certs/cert.pem', '/certs/key.pem')
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host='0.0.0.0', ssl_context=ctx)

@@ -1,0 +1,67 @@
+version: '3.9'
+
+
+
+# docker-compose -f docker-compose.dev.yml build
+# docker-compose -f docker-compose.dev.yml up -d
+
+services:
+  app:
+    build: ./app
+    container_name: flask_app_deploy
+    command: ["flask", "run", "--host=0.0.0.0", "--port=5000", "--reload", "--cert=/certs/cert.pem", "--key=/certs/key.pem"]
+    environment: 
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+    volumes:
+      - ./app:/app
+      - ./certs:/certs
+    expose:
+      - 5000
+      - 4431
+    ports:
+      - "5000:5000"
+      - "443:4431"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13-alpine
+    restart: unless-stopped
+  
+
+    volumes:
+      - pg_db:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    expose:
+      - 5432
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      - db
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin@pgadmin.postgresql
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+      - PGADMIN_LISTEN_ADDRESS=0.0.0.0
+      - PGADMIN_LISTEN_PORT=5555
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+      - "4431:443"
+    volumes:
+      - static:/home/web/default/static
+      - ./certs:/certs
+      - ./nginx:/etc/nginx/nginx:ro
+    depends_on:
+      - db
+      - pgadmin
+      - app
+
+volumes:
+  pg_db:
+  static:
